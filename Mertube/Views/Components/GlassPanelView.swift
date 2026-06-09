@@ -13,8 +13,9 @@ final class GlassPanelView: UIVisualEffectView {
         layer.cornerCurve = .continuous
         clipsToBounds = true
         layer.borderWidth = 1
-        layer.borderColor = UIColor.white.withAlphaComponent(0.12).cgColor
-        backgroundColor = UIColor.black.withAlphaComponent(0.2)
+        layer.borderColor = UIColor.white.withAlphaComponent(0.20).cgColor
+        backgroundColor = UIColor.white.withAlphaComponent(0.035)
+        contentView.backgroundColor = UIColor.white.withAlphaComponent(0.025)
     }
 
     required init?(coder: NSCoder) {

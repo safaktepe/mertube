@@ -130,12 +130,12 @@ final class PlayerViewController: UIViewController {
 
             previousArtworkView.trailingAnchor.constraint(equalTo: orbitView.leadingAnchor, constant: 20),
             previousArtworkView.centerYAnchor.constraint(equalTo: orbitView.centerYAnchor),
-            previousArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.34),
+            previousArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.39),
             previousArtworkView.heightAnchor.constraint(equalTo: previousArtworkView.widthAnchor),
 
             nextArtworkView.leadingAnchor.constraint(equalTo: orbitView.trailingAnchor, constant: -20),
             nextArtworkView.centerYAnchor.constraint(equalTo: orbitView.centerYAnchor),
-            nextArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.34),
+            nextArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.39),
             nextArtworkView.heightAnchor.constraint(equalTo: nextArtworkView.widthAnchor),
 
             controlsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 48),

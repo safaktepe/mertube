@@ -6,7 +6,7 @@
 import UIKit
 
 final class ArtworkOrbitView: UIView {
-    private let glassBlurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialLight))
+    private let glassBlurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
     private let glassBlurMaskLayer = CAShapeLayer()
     private let glassGradientLayer = CAGradientLayer()
     private let glassMaskLayer = CAShapeLayer()
@@ -31,8 +31,8 @@ final class ArtworkOrbitView: UIView {
         super.layoutSubviews()
         let center = CGPoint(x: bounds.midX, y: bounds.midY)
         let artworkRadius = bounds.width * 0.29
-        let outerRadius = bounds.width * 0.46
-        let ringInnerRadius = artworkRadius + bounds.width * 0.045
+        let outerRadius = bounds.width * 0.49
+        let ringInnerRadius = artworkRadius - 1
         let innerLineRadius = (artworkRadius + outerRadius) / 2
 
         durationLabel.sizeToFit()
@@ -116,14 +116,14 @@ final class ArtworkOrbitView: UIView {
         isUserInteractionEnabled = false
 
         glassBlurView.translatesAutoresizingMaskIntoConstraints = false
-        glassBlurView.alpha = 0.34
+        glassBlurView.alpha = 0.22
         glassBlurView.layer.mask = glassBlurMaskLayer
 
         glassGradientLayer.colors = [
-            UIColor.white.withAlphaComponent(0.24).cgColor,
-            UIColor.white.withAlphaComponent(0.07).cgColor,
-            UIColor.black.withAlphaComponent(0.13).cgColor,
-            UIColor.white.withAlphaComponent(0.11).cgColor
+            UIColor.white.withAlphaComponent(0.16).cgColor,
+            UIColor.white.withAlphaComponent(0.045).cgColor,
+            UIColor.black.withAlphaComponent(0.045).cgColor,
+            UIColor.white.withAlphaComponent(0.075).cgColor
         ]
         glassGradientLayer.locations = [0, 0.32, 0.72, 1]
         glassGradientLayer.startPoint = CGPoint(x: 0.12, y: 0)
@@ -132,30 +132,30 @@ final class ArtworkOrbitView: UIView {
         layer.addSublayer(glassGradientLayer)
         addSubview(glassBlurView)
 
-        outerStrokeLayer.strokeColor = UIColor.white.withAlphaComponent(0.58).cgColor
+        outerStrokeLayer.strokeColor = UIColor.white.withAlphaComponent(0.46).cgColor
         outerStrokeLayer.fillColor = UIColor.clear.cgColor
         outerStrokeLayer.lineWidth = 1.4
         outerStrokeLayer.shadowColor = UIColor.white.cgColor
-        outerStrokeLayer.shadowOpacity = 0.22
+        outerStrokeLayer.shadowOpacity = 0.18
         outerStrokeLayer.shadowRadius = 7
         outerStrokeLayer.shadowOffset = .zero
         layer.addSublayer(outerStrokeLayer)
 
-        innerStrokeLayer.strokeColor = UIColor.white.withAlphaComponent(0.16).cgColor
+        innerStrokeLayer.strokeColor = UIColor.white.withAlphaComponent(0.13).cgColor
         innerStrokeLayer.fillColor = UIColor.clear.cgColor
         innerStrokeLayer.lineWidth = 1.2
         innerStrokeLayer.lineCap = .round
         layer.addSublayer(innerStrokeLayer)
 
-        highlightLayer.strokeColor = UIColor.white.withAlphaComponent(0.42).cgColor
+        highlightLayer.strokeColor = UIColor.white.withAlphaComponent(0.34).cgColor
         highlightLayer.fillColor = UIColor.clear.cgColor
         highlightLayer.lineWidth = 2
         highlightLayer.lineCap = .round
         layer.addSublayer(highlightLayer)
 
         artworkView.translatesAutoresizingMaskIntoConstraints = false
-        artworkView.layer.borderWidth = 1.2
-        artworkView.layer.borderColor = UIColor.white.withAlphaComponent(0.16).cgColor
+        artworkView.layer.borderWidth = 0
+        artworkView.layer.borderColor = UIColor.clear.cgColor
 
         durationLabel.translatesAutoresizingMaskIntoConstraints = false
         durationLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
