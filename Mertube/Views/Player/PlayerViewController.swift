@@ -7,6 +7,7 @@ import UIKit
 
 final class PlayerViewController: UIViewController {
     var onSongChanged: ((Song) -> Void)?
+    var onCollapse: (() -> Void)?
 
     private let viewModel: PlayerViewModel
 
@@ -175,7 +176,11 @@ final class PlayerViewController: UIViewController {
     }
 
     @objc private func dismissPlayer() {
-        dismiss(animated: true)
+        if let onCollapse {
+            onCollapse()
+        } else {
+            dismiss(animated: true)
+        }
     }
 
     @objc private func playPrevious() {

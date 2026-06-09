@@ -31,8 +31,8 @@ final class PlaylistDetailViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
-        tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 108, right: 0)
-        tableView.rowHeight = 76
+        tableView.contentInset = UIEdgeInsets(top: 10, left: 0, bottom: 170, right: 0)
+        tableView.rowHeight = 92
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(SongCell.self, forCellReuseIdentifier: SongCell.reuseIdentifier)

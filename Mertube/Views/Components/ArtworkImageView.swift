@@ -6,8 +6,18 @@
 import UIKit
 
 final class ArtworkImageView: UIView {
+    enum Shape {
+        case circle
+        case rounded(CGFloat)
+    }
+
     private let gradientLayer = CAGradientLayer()
     private let symbolImageView = UIImageView()
+    var shape: Shape = .circle {
+        didSet {
+            setNeedsLayout()
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -22,7 +32,12 @@ final class ArtworkImageView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         gradientLayer.frame = bounds
-        layer.cornerRadius = bounds.width / 2
+        switch shape {
+        case .circle:
+            layer.cornerRadius = bounds.width / 2
+        case .rounded(let radius):
+            layer.cornerRadius = radius
+        }
     }
 
     func configure(with artwork: Artwork) {
