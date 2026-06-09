@@ -116,12 +116,8 @@ final class MainTabBarController: UIViewController {
         playerController.onSongChanged = { [weak self] song in
             self?.glassTabBar.configureArtwork(song.artwork)
         }
-        playerController.modalPresentationStyle = .pageSheet
-        if let sheet = playerController.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = false
-            sheet.preferredCornerRadius = 34
-        }
+        playerController.modalPresentationStyle = .fullScreen
+        playerController.modalTransitionStyle = .coverVertical
 
         present(playerController, animated: true)
     }

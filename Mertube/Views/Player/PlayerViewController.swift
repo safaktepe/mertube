@@ -46,10 +46,10 @@ final class PlayerViewController: UIViewController {
         let menuButton = IconButton(systemName: "ellipsis", pointSize: 24)
         let favoriteButton = IconButton(systemName: "heart", pointSize: 25)
 
-        titleLabel.font = .systemFont(ofSize: 35, weight: .light)
+        titleLabel.font = .systemFont(ofSize: 31, weight: .light)
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 1
-        artistLabel.font = .systemFont(ofSize: 18, weight: .medium)
+        artistLabel.font = .systemFont(ofSize: 16, weight: .medium)
         artistLabel.textColor = UIColor.white.withAlphaComponent(0.65)
 
         [previousArtworkView, nextArtworkView].forEach {
@@ -81,6 +81,10 @@ final class PlayerViewController: UIViewController {
         let bottomHome = IconButton(systemName: "house", pointSize: 22)
         let bottomList = IconButton(systemName: "music.note.list", pointSize: 22)
         let bottomBell = IconButton(systemName: "bell", pointSize: 21)
+        bottomHome.tintColor = UIColor.white.withAlphaComponent(0.48)
+        bottomList.tintColor = .white
+        bottomBell.tintColor = UIColor.white.withAlphaComponent(0.48)
+
         let bottomStack = UIStackView(arrangedSubviews: [bottomHome, bottomList, bottomBell])
         bottomStack.axis = .horizontal
         bottomStack.alignment = .center
@@ -104,23 +108,23 @@ final class PlayerViewController: UIViewController {
             backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-            collapseButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            collapseButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 18),
             collapseButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             collapseButton.widthAnchor.constraint(equalToConstant: 48),
             collapseButton.heightAnchor.constraint(equalToConstant: 44),
 
-            menuButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -28),
-            menuButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 78),
+            menuButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -18),
+            menuButton.topAnchor.constraint(equalTo: collapseButton.topAnchor),
             menuButton.widthAnchor.constraint(equalToConstant: 48),
             menuButton.heightAnchor.constraint(equalToConstant: 48),
 
-            favoriteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
-            favoriteButton.topAnchor.constraint(equalTo: menuButton.bottomAnchor, constant: 32),
+            favoriteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -18),
+            favoriteButton.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             favoriteButton.widthAnchor.constraint(equalToConstant: 48),
             favoriteButton.heightAnchor.constraint(equalToConstant: 48),
 
-            titleStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 46),
-            titleStack.trailingAnchor.constraint(lessThanOrEqualTo: menuButton.leadingAnchor, constant: -18),
+            titleStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 18),
+            titleStack.trailingAnchor.constraint(lessThanOrEqualTo: favoriteButton.leadingAnchor, constant: -18),
             titleStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 70),
 
             orbitView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -130,17 +134,17 @@ final class PlayerViewController: UIViewController {
 
             previousArtworkView.trailingAnchor.constraint(equalTo: orbitView.leadingAnchor, constant: 20),
             previousArtworkView.centerYAnchor.constraint(equalTo: orbitView.centerYAnchor),
-            previousArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.39),
+            previousArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.44),
             previousArtworkView.heightAnchor.constraint(equalTo: previousArtworkView.widthAnchor),
 
             nextArtworkView.leadingAnchor.constraint(equalTo: orbitView.trailingAnchor, constant: -20),
             nextArtworkView.centerYAnchor.constraint(equalTo: orbitView.centerYAnchor),
-            nextArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.39),
+            nextArtworkView.widthAnchor.constraint(equalTo: orbitView.widthAnchor, multiplier: 0.44),
             nextArtworkView.heightAnchor.constraint(equalTo: nextArtworkView.widthAnchor),
 
             controlsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 48),
             controlsStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -48),
-            controlsStack.topAnchor.constraint(equalTo: orbitView.bottomAnchor, constant: 30),
+            controlsStack.topAnchor.constraint(equalTo: orbitView.bottomAnchor, constant: 82),
             controlsStack.heightAnchor.constraint(equalToConstant: 54),
 
             bottomBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 34),
