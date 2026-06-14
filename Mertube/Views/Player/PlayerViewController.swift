@@ -14,11 +14,15 @@ final class PlayerViewController: UIViewController {
     private let backgroundView = PlayerBackdropView()
     private let titleLabel = UILabel()
     private let artistLabel = UILabel()
+    private let previewTitleLabel = UILabel()
+    private let previewArtistLabel = UILabel()
+    private let previewTitleStack = UIStackView()
     private let orbitView = ArtworkOrbitView()
     private let previousArtworkView = SideArtworkGlassView()
     private let nextArtworkView = SideArtworkGlassView()
     private let playButton = IconButton(systemName: "pause.fill", pointSize: 34)
     private let bottomBar = GlassPanelView(cornerRadius: 34)
+    private var isArtworkTransitioning = false
 
     init(viewModel: PlayerViewModel) {
         self.viewModel = viewModel
@@ -52,6 +56,16 @@ final class PlayerViewController: UIViewController {
         titleLabel.numberOfLines = 1
         artistLabel.font = .systemFont(ofSize: 16, weight: .medium)
         artistLabel.textColor = UIColor.white.withAlphaComponent(0.65)
+        previewTitleLabel.font = titleLabel.font
+        previewTitleLabel.textColor = titleLabel.textColor
+        previewTitleLabel.numberOfLines = 1
+        previewArtistLabel.font = artistLabel.font
+        previewArtistLabel.textColor = artistLabel.textColor
+        previewTitleStack.axis = .vertical
+        previewTitleStack.spacing = 4
+        previewTitleStack.alpha = 0
+        previewTitleStack.transform = CGAffineTransform(translationX: 0, y: 10)
+        previewTitleStack.translatesAutoresizingMaskIntoConstraints = false
 
         [previousArtworkView, nextArtworkView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -64,6 +78,8 @@ final class PlayerViewController: UIViewController {
         titleStack.axis = .vertical
         titleStack.spacing = 4
         titleStack.translatesAutoresizingMaskIntoConstraints = false
+        previewTitleStack.addArrangedSubview(previewTitleLabel)
+        previewTitleStack.addArrangedSubview(previewArtistLabel)
 
         let previousButton = IconButton(systemName: "backward.fill", pointSize: 24)
         let nextButton = IconButton(systemName: "forward.fill", pointSize: 24)
@@ -96,12 +112,16 @@ final class PlayerViewController: UIViewController {
         view.addSubview(menuButton)
         view.addSubview(favoriteButton)
         view.addSubview(titleStack)
+        view.addSubview(previewTitleStack)
         view.addSubview(previousArtworkView)
         view.addSubview(nextArtworkView)
         view.addSubview(orbitView)
         view.addSubview(controlsStack)
         view.addSubview(bottomBar)
         bottomBar.contentView.addSubview(bottomStack)
+
+        let artworkPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handleArtworkPan(_:)))
+        orbitView.addGestureRecognizer(artworkPanGesture)
 
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -127,6 +147,10 @@ final class PlayerViewController: UIViewController {
             titleStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 18),
             titleStack.trailingAnchor.constraint(lessThanOrEqualTo: favoriteButton.leadingAnchor, constant: -18),
             titleStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 70),
+
+            previewTitleStack.leadingAnchor.constraint(equalTo: titleStack.leadingAnchor),
+            previewTitleStack.trailingAnchor.constraint(equalTo: titleStack.trailingAnchor),
+            previewTitleStack.topAnchor.constraint(equalTo: titleStack.topAnchor),
 
             orbitView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             orbitView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -34),
@@ -169,7 +193,12 @@ final class PlayerViewController: UIViewController {
         titleLabel.text = viewModel.currentSong.title
         artistLabel.text = viewModel.currentSong.artist
         backgroundView.configure(with: viewModel.currentSong.artwork)
-        orbitView.configure(with: viewModel.currentSong.artwork, duration: viewModel.durationText)
+        orbitView.configure(
+            previous: viewModel.previousSong.artwork,
+            current: viewModel.currentSong.artwork,
+            next: viewModel.nextSong.artwork,
+            duration: viewModel.durationText
+        )
         previousArtworkView.configure(with: viewModel.previousSong.artwork)
         nextArtworkView.configure(with: viewModel.nextSong.artwork)
         onSongChanged?(viewModel.currentSong)
@@ -189,5 +218,67 @@ final class PlayerViewController: UIViewController {
 
     @objc private func playNext() {
         viewModel.playNext()
+    }
+
+    @objc private func handleArtworkPan(_ gesture: UIPanGestureRecognizer) {
+        guard !isArtworkTransitioning else { return }
+
+        let translation = gesture.translation(in: orbitView)
+        let velocity = gesture.velocity(in: orbitView)
+
+        switch gesture.state {
+        case .began:
+            orbitView.setArtworkPressed(true)
+        case .changed:
+            orbitView.updateArtworkDrag(translationX: translation.x)
+            updateTrackPreview(for: translation.x)
+        case .ended, .cancelled, .failed:
+            let shouldChangeSong = abs(translation.x) > orbitView.bounds.width * 0.20 || abs(velocity.x) > 420
+            guard shouldChangeSong else {
+                orbitView.resetArtworkDrag()
+                resetTrackPreview()
+                return
+            }
+
+            isArtworkTransitioning = true
+            let direction: CGFloat = translation.x >= 0 ? 1 : -1
+            orbitView.completeArtworkSwipe(direction: direction) { [weak self] in
+                if direction > 0 {
+                    self?.viewModel.playPrevious()
+                } else {
+                    self?.viewModel.playNext()
+                }
+            } completion: { [weak self] in
+                self?.resetTrackPreview()
+                self?.isArtworkTransitioning = false
+            }
+        default:
+            break
+        }
+    }
+
+    private func updateTrackPreview(for translationX: CGFloat) {
+        let previewSong = translationX >= 0 ? viewModel.previousSong : viewModel.nextSong
+        previewTitleLabel.text = previewSong.title
+        previewArtistLabel.text = previewSong.artist
+
+        let progress = min(1, abs(translationX) / max(1, orbitView.bounds.width * 0.34))
+        titleLabel.alpha = 1 - progress
+        artistLabel.alpha = 1 - progress
+        previewTitleStack.alpha = progress
+        previewTitleStack.transform = CGAffineTransform(translationX: 0, y: (1 - progress) * 10)
+    }
+
+    private func resetTrackPreview() {
+        UIView.animate(
+            withDuration: 0.18,
+            delay: 0,
+            options: [.curveEaseOut, .allowUserInteraction]
+        ) {
+            self.titleLabel.alpha = 1
+            self.artistLabel.alpha = 1
+            self.previewTitleStack.alpha = 0
+            self.previewTitleStack.transform = CGAffineTransform(translationX: 0, y: 10)
+        }
     }
 }

@@ -19,6 +19,7 @@ final class MainTabBarController: UIViewController {
     private var playerController: PlayerViewController?
     private var playerTopConstraint: NSLayoutConstraint?
     private var isPlayerCollapsed = true
+    private var isPlayerAnimating = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -175,10 +176,22 @@ final class MainTabBarController: UIViewController {
     }
 
     private func collapsePlayer() {
-        guard let playerView = playerController?.view else { return }
+        guard let playerView = playerController?.view, !isPlayerAnimating else { return }
 
+        isPlayerAnimating = true
         view.layoutIfNeeded()
+        playerView.isHidden = false
+        playerView.alpha = 1
+        view.bringSubviewToFront(playerView)
+
+        finishCollapsingPlayer(from: playerView)
+    }
+
+    private func finishCollapsingPlayer(from playerView: UIView) {
         let targetFrame = miniPlayerView.convert(miniPlayerView.bounds, to: view)
+        let slideFrame = playerView.frame.offsetBy(dx: 0, dy: min(view.bounds.height * 0.24, 220))
+        let intermediateFrame = collapsedIntermediateFrame(finalFrame: targetFrame)
+        let preFinalFrame = targetFrame.insetBy(dx: -10, dy: -7).offsetBy(dx: 0, dy: -18)
         let snapshot = playerView.snapshotView(afterScreenUpdates: false)
 
         snapshot?.frame = playerView.frame
@@ -190,7 +203,7 @@ final class MainTabBarController: UIViewController {
 
         miniPlayerView.isHidden = false
         miniPlayerView.alpha = 0
-        miniPlayerView.transform = CGAffineTransform(scaleX: 0.88, y: 0.88).translatedBy(x: 0, y: 16)
+        miniPlayerView.transform = CGAffineTransform(scaleX: 0.94, y: 0.94).translatedBy(x: 0, y: 12)
         view.bringSubviewToFront(miniPlayerView)
         if let snapshot {
             view.bringSubviewToFront(snapshot)
@@ -200,35 +213,51 @@ final class MainTabBarController: UIViewController {
         playerView.isHidden = true
         playerTopConstraint?.constant = 0
 
-        UIView.animate(
-            withDuration: 0.72,
-            delay: 0,
-            usingSpringWithDamping: 0.88,
-            initialSpringVelocity: 0.18,
-            options: [.curveEaseInOut, .allowUserInteraction]
-        ) {
-            snapshot?.frame = targetFrame
-            snapshot?.layer.cornerRadius = 30
-            snapshot?.alpha = 0.18
-            self.miniPlayerView.alpha = 1
-            self.miniPlayerView.transform = .identity
-            self.glassTabBar.alpha = 1
+        UIView.animateKeyframes(withDuration: 0.58, delay: 0, options: [.calculationModeCubic, .allowUserInteraction]) {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.24) {
+                snapshot?.frame = slideFrame
+                snapshot?.layer.cornerRadius = 24
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.14, relativeDuration: 0.48) {
+                snapshot?.frame = intermediateFrame
+                snapshot?.layer.cornerRadius = 70
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.48, relativeDuration: 0.30) {
+                snapshot?.frame = preFinalFrame
+                snapshot?.layer.cornerRadius = 38
+                self.miniPlayerView.alpha = 0.35
+                self.miniPlayerView.transform = CGAffineTransform(scaleX: 0.98, y: 0.98).translatedBy(x: 0, y: 3)
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.70, relativeDuration: 0.30) {
+                snapshot?.frame = targetFrame
+                snapshot?.layer.cornerRadius = 30
+                snapshot?.alpha = 0
+                self.miniPlayerView.alpha = 1
+                self.miniPlayerView.transform = .identity
+                self.glassTabBar.alpha = 1
+            }
         } completion: { _ in
             snapshot?.removeFromSuperview()
             self.isPlayerCollapsed = true
+            self.isPlayerAnimating = false
         }
     }
 
     private func expandPlayer() {
-        guard let playerView = playerController?.view else { return }
+        guard let playerView = playerController?.view, !isPlayerAnimating else { return }
 
         if !isPlayerCollapsed {
             presentFullPlayerFromBottom()
             return
         }
 
+        isPlayerAnimating = true
         view.layoutIfNeeded()
         let sourceFrame = miniPlayerView.convert(miniPlayerView.bounds, to: view)
+        let intermediateFrame = collapsedIntermediateFrame(finalFrame: sourceFrame)
+        let postSourceFrame = sourceFrame.insetBy(dx: -10, dy: -7).offsetBy(dx: 0, dy: -18)
+        let slideOffset = min(view.bounds.height * 0.24, 220)
+        let slideFrame = view.bounds.offsetBy(dx: 0, dy: slideOffset)
         let snapshot = miniPlayerView.snapshotView(afterScreenUpdates: true)
 
         snapshot?.frame = sourceFrame
@@ -239,7 +268,8 @@ final class MainTabBarController: UIViewController {
             view.addSubview(snapshot)
         }
 
-        playerTopConstraint?.constant = 0
+        playerTopConstraint?.constant = slideOffset
+        view.layoutIfNeeded()
         playerView.isHidden = false
         playerView.alpha = 0
         view.bringSubviewToFront(playerView)
@@ -248,31 +278,46 @@ final class MainTabBarController: UIViewController {
         }
         miniPlayerView.alpha = 0
 
-        UIView.animate(
-            withDuration: 0.74,
-            delay: 0,
-            usingSpringWithDamping: 0.89,
-            initialSpringVelocity: 0.14,
-            options: [.curveEaseInOut, .allowUserInteraction]
-        ) {
-            snapshot?.frame = self.view.bounds
-            snapshot?.layer.cornerRadius = 0
-            snapshot?.alpha = 0
-            playerView.alpha = 1
-            self.view.layoutIfNeeded()
+        UIView.animateKeyframes(withDuration: 0.58, delay: 0, options: [.calculationModeCubic, .allowUserInteraction]) {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.24) {
+                snapshot?.frame = postSourceFrame
+                snapshot?.layer.cornerRadius = 38
+                snapshot?.alpha = 1
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.16, relativeDuration: 0.44) {
+                snapshot?.frame = intermediateFrame
+                snapshot?.layer.cornerRadius = 70
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.50, relativeDuration: 0.28) {
+                snapshot?.frame = slideFrame
+                snapshot?.layer.cornerRadius = 24
+                playerView.alpha = 0.35
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.70, relativeDuration: 0.30) {
+                snapshot?.frame = self.view.bounds
+                snapshot?.layer.cornerRadius = 0
+                snapshot?.alpha = 0
+                playerView.alpha = 1
+                self.playerTopConstraint?.constant = 0
+                self.view.layoutIfNeeded()
+            }
         } completion: { _ in
             snapshot?.removeFromSuperview()
             self.miniPlayerView.isHidden = true
             self.miniPlayerView.alpha = 0
             self.miniPlayerView.transform = .identity
             playerView.alpha = 1
+            self.playerTopConstraint?.constant = 0
+            self.view.layoutIfNeeded()
             self.isPlayerCollapsed = false
+            self.isPlayerAnimating = false
         }
     }
 
     private func presentFullPlayerFromBottom() {
-        guard let playerView = playerController?.view else { return }
+        guard let playerView = playerController?.view, !isPlayerAnimating else { return }
 
+        isPlayerAnimating = true
         playerView.isHidden = false
         playerView.alpha = 1
         view.bringSubviewToFront(playerView)
@@ -281,7 +326,7 @@ final class MainTabBarController: UIViewController {
         playerTopConstraint?.constant = 0
 
         UIView.animate(
-            withDuration: 0.58,
+            withDuration: 0.48,
             delay: 0,
             usingSpringWithDamping: 0.92,
             initialSpringVelocity: 0.18,
@@ -290,7 +335,20 @@ final class MainTabBarController: UIViewController {
             self.view.layoutIfNeeded()
         } completion: { _ in
             self.isPlayerCollapsed = false
+            self.isPlayerAnimating = false
         }
+    }
+
+    private func collapsedIntermediateFrame(finalFrame: CGRect) -> CGRect {
+        let width = min(view.bounds.width - 52, finalFrame.width + 58)
+        let height = min(178, view.bounds.height * 0.18)
+        let y = max(view.safeAreaInsets.top + 130, finalFrame.minY - height - 24)
+        return CGRect(
+            x: (view.bounds.width - width) / 2,
+            y: y,
+            width: width,
+            height: height
+        )
     }
 }
 
